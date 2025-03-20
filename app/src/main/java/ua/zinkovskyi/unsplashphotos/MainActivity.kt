@@ -7,6 +7,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -15,6 +16,8 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -71,14 +74,15 @@ class PhotoViewModel : ViewModel() {
     private val apiService = UnsplashApiService(client, "afdBxz_67xorIqGGA-f1JC2SiOWKc7mCH1gONcyy8_Q")
 
     // Состояние для хранения списка фотографий
-    var photos: List<Image> = emptyList()
+    var photos = mutableStateOf<List<Image>>(emptyList())
         private set
 
     // Загрузка фотографий в фоновом потоке
     fun loadPhotos(page: Int, perPage: Int) {
         viewModelScope.launch {
             try {
-                photos = apiService.getPhotos(page, perPage)
+                val loadedPhotos = apiService.getPhotos(page, perPage)
+                photos.value = loadedPhotos
             } catch (e: Exception) {
                 // Обработка ошибки
             }
@@ -91,29 +95,24 @@ class PhotoViewModel : ViewModel() {
 fun PhotoListScreen(viewModel: PhotoViewModel) {
     // Состояние для отслеживания загрузки данных
     val photos = viewModel.photos
-    val isLoading = photos.isEmpty()
 
-    // Загружаем фотографии, если они еще не загружены
     LaunchedEffect(Unit) {
         viewModel.loadPhotos(page = 1, perPage = 10)
     }
 
-    if (isLoading) {
+    if (photos.value.isEmpty()) {
         // Показываем индикатор загрузки, если фотографии еще не загружены
         CircularProgressIndicator()
-    } else {
-        // Отображаем список фотографий
-        LazyColumn {
-            items(photos) { photo ->
-                PhotoItem(photo)
-            }
+    }
+    LazyColumn {
+        items(photos.value) { photo ->
+            PhotoItem(photo)
         }
     }
 }
 
 @Composable
 fun PhotoItem(photo: Image) {
-    // Используем Coil для загрузки изображения // )
     val imageUrl = photo.urls.small
     val imagePainter = rememberAsyncImagePainter(imageUrl)
 
@@ -122,7 +121,10 @@ fun PhotoItem(photo: Image) {
     Image(
         painter = imagePainter,
         contentDescription = "Photo",
-        modifier = Modifier.fillMaxWidth().padding(16.dp)
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(200.dp)
+            .padding(16.dp)
     )
 }
 
