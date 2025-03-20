@@ -2,24 +2,24 @@ package ua.zinkovskyi.unsplashphotos
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.CircularProgressIndicator
@@ -31,20 +31,13 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.RectangleShape
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
@@ -54,7 +47,6 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import coil.compose.rememberAsyncImagePainter
-import coil.compose.rememberImagePainter
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.cio.CIO
 import kotlinx.coroutines.launch
@@ -69,14 +61,10 @@ class MainActivity : ComponentActivity() {
         setContent {
             UnSplashPhotosTheme {
                 MainActivityContent()
-//                Scaffold(modifier = Modifier.fillMaxSize()) { //innerPadding ->
-//                    //PhotoListScreen(Modifier.padding(innerPadding), PhotoViewModel())
-//                }
             }
         }
     }
 }
-
 
 class PhotoViewModel : ViewModel() {
     val client = HttpClient(CIO)
@@ -101,6 +89,8 @@ class PhotoViewModel : ViewModel() {
     }
 }
 
+val vm = PhotoViewModel()
+
 @Composable
 fun MainActivityContent() {
     val navController = rememberNavController()
@@ -115,7 +105,7 @@ fun MainActivityContent() {
             ) {
                 composable("photo_list") {
                     PhotoListScreen(
-                        viewModel = PhotoViewModel(),
+                        viewModel = vm,
                         onPhotoClick = { photo ->
                             navController.navigate("photo_detail/${photo.id}")
                         }
@@ -125,21 +115,34 @@ fun MainActivityContent() {
                     "photo_detail/{photoId}",
                     arguments = listOf(navArgument("photoId") { type = NavType.StringType })
                 ) { backStackEntry ->
-                    val photoId = backStackEntry.arguments?.getString("photoId") ?: return@composable
-                    //val photo = getPhotoById(photoId) // Загружаем фото по id, или передаем заранее
-//                    PhotoDetailScreen(
-//                        photo = photo,
-//                        onBackClick = { navController.popBackStack() }
-//                    )
+                    val photoId =
+                        backStackEntry.arguments?.getString("photoId") ?: return@composable
+
+                    val photo = vm.photos.value.filter { it.id == photoId }.first()
+
+                    PhotoScreen(
+                        photo = photo,
+                    )
                 }
             }
         }
     )
+
+    val context = LocalContext.current
+    BackHandler {
+        if (navController.currentBackStackEntry == null || navController.previousBackStackEntry == null) {
+            // Закрываем приложение, если бэкстек пуст
+            (context as? ComponentActivity)?.finish()
+        } else {
+            navController.popBackStack() // Иначе стандартное поведение
+        }
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AppBar(navController: NavController) {
+    val context = LocalContext.current
     TopAppBar(
         title = {
             Text(
@@ -149,7 +152,13 @@ fun AppBar(navController: NavController) {
         },
         navigationIcon = {
             if (navController.currentBackStackEntry?.destination?.route != "photo_list") {
-                IconButton(onClick = { navController.popBackStack() }) {
+                IconButton(onClick = {
+                    if (navController.previousBackStackEntry != null) {
+                        navController.popBackStack()
+                    } else {
+                        (context as? ComponentActivity)?.finish()
+                    }
+                }) {
                     Icon(Icons.Default.ArrowBack, contentDescription = "Back")
                 }
             }
@@ -159,38 +168,50 @@ fun AppBar(navController: NavController) {
 
 
 @Composable
-fun PhotoListScreen(modifier: Modifier = Modifier, viewModel: PhotoViewModel, onPhotoClick: (Image) -> Unit) {
+fun PhotoListScreen(
+    modifier: Modifier = Modifier,
+    viewModel: PhotoViewModel,
+    onPhotoClick: (Image) -> Unit
+) {
     // Состояние для отслеживания загрузки данных
     val photos = viewModel.photos
 
-    LaunchedEffect(Unit) {
-        viewModel.loadPhotos(page = 1, perPage = 30)
-    }
+    viewModel.loadPhotos(page = 1, perPage = 30)
 
-    Box(Modifier
-        .fillMaxSize()
-        .then(modifier)
+    Box(
+        Modifier
+            .fillMaxSize()
+            .then(modifier)
     ) {
         if (photos.value.isEmpty()) {
             CircularProgressIndicator(Modifier.align(Alignment.Center))
         }
-        SpanLazyVerticalGrid(2, photos.value)
+        SpanLazyVerticalGrid(2, photos.value, onPhotoClick)
     }
 }
 
 @Composable
-fun SpanLazyVerticalGrid(cols: Int, itemList: List<Image>) {
+fun SpanLazyVerticalGrid(cols: Int, itemList: List<Image>, onPhotoClick: (Image) -> Unit) {
     val lazyGridState = rememberLazyGridState()
     LazyVerticalGrid(
         columns = GridCells.Fixed(cols),
         state = lazyGridState
     ) {
         items(itemList, span = { photo ->
-            val isHorizontal = (photo.width ?: 0) > (photo.height ?: 0)
             val span = 1
             GridItemSpan(span)
         }) { photo ->
-            PhotoItem(photo)
+            Box(
+                modifier = Modifier
+                    .clickable(
+                        onClick = {
+                            onPhotoClick(photo)
+                        },
+                    )
+                    .fillMaxSize() // Дополнительно задаём размер, если нужно
+            ) {
+                PhotoItem(photo)
+            }
         }
     }
 }
@@ -230,8 +251,30 @@ fun PhotoItem(photo: Image) {
     }
 }
 
-//@Preview(showBackground = true)
-//@Composable
-//fun DefaultPreview() {
-//    PhotoListScreen(viewModel = PhotoViewModel())
-//}
+@Composable
+fun PhotoScreen(photo: Image) {
+    val imageUrl = photo.urls.full
+    val imagePainter = rememberAsyncImagePainter(imageUrl)
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .wrapContentHeight()
+    ) {
+        Box {
+            Image(
+                painter = imagePainter,
+                contentDescription = "Photo",
+                modifier = Modifier
+                    .align(Alignment.Center)
+            )
+        }
+
+        Text(
+            text = photo.user.name,
+            color = Color.White,
+            style = MaterialTheme.typography.bodyLarge
+        )
+
+    }
+}
