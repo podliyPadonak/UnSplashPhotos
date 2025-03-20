@@ -79,4 +79,5 @@ dependencies {
 
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.0")
     implementation("androidx.compose.compiler:compiler:1.5.15")
+    implementation(libs.androidx.navigation.compose)
 }

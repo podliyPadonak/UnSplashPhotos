@@ -20,10 +20,16 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
@@ -41,6 +47,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.navigation.NavController
+import androidx.navigation.NavType
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import coil.compose.rememberAsyncImagePainter
 import coil.compose.rememberImagePainter
 import io.ktor.client.HttpClient
@@ -56,9 +68,10 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             UnSplashPhotosTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    PhotoListScreen(Modifier.padding(innerPadding), PhotoViewModel())
-                }
+                MainActivityContent()
+//                Scaffold(modifier = Modifier.fillMaxSize()) { //innerPadding ->
+//                    //PhotoListScreen(Modifier.padding(innerPadding), PhotoViewModel())
+//                }
             }
         }
     }
@@ -88,9 +101,65 @@ class PhotoViewModel : ViewModel() {
     }
 }
 
+@Composable
+fun MainActivityContent() {
+    val navController = rememberNavController()
+
+    Scaffold(
+        topBar = { AppBar(navController) },
+        content = { innerPadding ->
+            NavHost(
+                navController = navController,
+                startDestination = "photo_list",
+                modifier = Modifier.padding(innerPadding)
+            ) {
+                composable("photo_list") {
+                    PhotoListScreen(
+                        viewModel = PhotoViewModel(),
+                        onPhotoClick = { photo ->
+                            navController.navigate("photo_detail/${photo.id}")
+                        }
+                    )
+                }
+                composable(
+                    "photo_detail/{photoId}",
+                    arguments = listOf(navArgument("photoId") { type = NavType.StringType })
+                ) { backStackEntry ->
+                    val photoId = backStackEntry.arguments?.getString("photoId") ?: return@composable
+                    //val photo = getPhotoById(photoId) // Загружаем фото по id, или передаем заранее
+//                    PhotoDetailScreen(
+//                        photo = photo,
+//                        onBackClick = { navController.popBackStack() }
+//                    )
+                }
+            }
+        }
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun AppBar(navController: NavController) {
+    TopAppBar(
+        title = {
+            Text(
+                text = if (navController.currentBackStackEntry?.destination?.route == "photo_list") "Галерея" else "Фото",
+                style = MaterialTheme.typography.titleLarge
+            )
+        },
+        navigationIcon = {
+            if (navController.currentBackStackEntry?.destination?.route != "photo_list") {
+                IconButton(onClick = { navController.popBackStack() }) {
+                    Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                }
+            }
+        }
+    )
+}
+
 
 @Composable
-fun PhotoListScreen(modifier: Modifier = Modifier, viewModel: PhotoViewModel) {
+fun PhotoListScreen(modifier: Modifier = Modifier, viewModel: PhotoViewModel, onPhotoClick: (Image) -> Unit) {
     // Состояние для отслеживания загрузки данных
     val photos = viewModel.photos
 
@@ -161,8 +230,8 @@ fun PhotoItem(photo: Image) {
     }
 }
 
-@Preview(showBackground = true)
-@Composable
-fun DefaultPreview() {
-    PhotoListScreen(viewModel = PhotoViewModel())
-}
+//@Preview(showBackground = true)
+//@Composable
+//fun DefaultPreview() {
+//    PhotoListScreen(viewModel = PhotoViewModel())
+//}
