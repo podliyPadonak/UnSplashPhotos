@@ -21,6 +21,7 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -30,8 +31,11 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -138,140 +142,48 @@ fun SpanLazyVerticalGrid(cols: Int, itemList: List<Image>) {
             }
             GridItemSpan(span)
         }) { photo ->
-            val imageUrl = photo.urls.small
-            //val imagePainter = rememberAsyncImagePainter(imageUrl)
-
             PhotoItem(photo)
-
-//            Box(
-//                modifier = Modifier
-//                    .padding(4.dp)
-//                    .fillMaxWidth()
-//                    .height(200.dp)
-//            ) {
-//                Image(
-//                    painter = imagePainter,
-//                    contentDescription = "Photo",
-//                    modifier = Modifier.fillMaxSize()
-//                )
-//            }
         }
     }
 }
 
-//@Composable
-//fun PhotoGrid(photos: List<Image>) {
-//    LazyVerticalGrid(
-//        columns = GridCells.Fixed(3), // 3 колонки
-//        contentPadding = PaddingValues(4.dp),
-//        content = {
-//            items(photos) { photo ->
-//                val isHorizontal = (photo.width ?: 0) > (photo.height ?: 0)
-//                val imageUrl = photo.urls.small
-//                val imagePainter = rememberAsyncImagePainter(imageUrl)
-//
-//                // Используем spanStrategy, чтобы контролировать, сколько колонок будет занимать элемент
-//                val span = if (isHorizontal) {
-//                    GridItemSpan(2) // горизонтальное фото занимает 2 колонки
-//                } else {
-//                    GridItemSpan(1) // вертикальное фото занимает 1 колонку
-//                }
-//
-//                Box(
-//                    modifier = Modifier
-//                        .padding(4.dp)
-//                        .fillMaxWidth()
-//                ) {
-//                    Image(
-//                        painter = imagePainter,
-//                        contentDescription = "Photo",
-//                        modifier = Modifier.fillMaxSize()
-//                    )
-//                }
-//            }
-//        }
-//    )
-//}
-//
-//
-//@Composable
-//fun PhotoCollage2(photos: List<Image>) {
-//    LazyVerticalGrid(
-//        columns = GridCells.Adaptive(minSize = 120.dp),
-//        modifier = Modifier.fillMaxSize()
-//    ) {
-//        items(photos) { photo -> // Перебираем список photos
-//            val imageUrl = photo.urls.small
-//            val imagePainter = rememberAsyncImagePainter(imageUrl)
-//
-//            // Получаем пропорции изображения
-//            val aspectRatio = remember(photo) { calculateAspectRatio(photo) }
-//
-//            // Отображаем изображение с нужными пропорциями
-//            Box(
-//                modifier = Modifier
-//                    .padding(4.dp) // Отступы между изображениями
-//                    .aspectRatio(aspectRatio) // Используем динамическое соотношение сторон
-//            ) {
-//                Image(
-//                    painter = imagePainter,
-//                    contentDescription = "Photo",
-//                    modifier = Modifier.fillMaxSize()
-//                )
-//            }
-//        }
-//    }
-//}
-
-//// Эта функция имитирует расчет соотношения сторон изображения
-//// Реальный код для вычисления соотношения сторон изображения будет зависеть от библиотеки для работы с изображениями
-//fun calculateAspectRatio(photo: Image): Float {
-//    val width = photo.width ?: 1
-//    val height = photo.height ?: 1
-//    return width.toFloat() / height.toFloat()
-//}
-
-//@Composable
-//fun PhotoCollage(photos: List<Image>) {
-//    LazyVerticalGrid(
-//        columns = GridCells.Adaptive(minSize = 128.dp), // автоматически регулирует размер ячеек
-//        modifier = Modifier.fillMaxSize()
-//    ) {
-//        items(photos.count()) { photo ->
-//            val imageUrl = photos[photo].urls.small
-//            val imagePainter = rememberAsyncImagePainter(imageUrl)
-//
-//            // Загружаем и показываем изображение в коллаже
-//            Box(
-//                modifier = Modifier
-//                    .padding(4.dp) // отступы между изображениями
-//                    .aspectRatio(1f) // соотношение сторон 1:1 (можно изменять)
-//            ) {
-//                Image(
-//                    painter = imagePainter,
-//                    contentDescription = "Photo",
-//                    modifier = Modifier.fillMaxSize()
-//                )
-//            }
-//        }
-//    }
-//}
 
 @Composable
 fun PhotoItem(photo: Image) {
     val imageUrl = photo.urls.small
     val imagePainter = rememberAsyncImagePainter(imageUrl)
 
-    // Элемент списка, отображающий миниатюру фотографии
-    Text(text = photo.user.name)
-    Image(
-        painter = imagePainter,
-        contentDescription = "Photo",
+    // Используем Box для размещения изображения и текста
+    Box(
         modifier = Modifier
             .fillMaxWidth()
             .height(200.dp)
-            .padding(16.dp)
-    )
+    ) {
+        // Изображение, которое занимает все пространство, с обрезкой
+        Image(
+            painter = imagePainter,
+            contentDescription = "Photo",
+            contentScale = ContentScale.Crop,
+            modifier = Modifier
+                .fillMaxSize()  // Занимает все доступное пространство
+                .align(Alignment.Center) // Выравнивание изображения по центру
+        )
+
+        // Текст с темным фоном, расположенный внизу
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .align(Alignment.BottomCenter)  // Текст будет снизу по центру
+                .background(Color.Black.copy(alpha = 0.6f))  // Темный фон с прозрачностью
+                .padding(8.dp)  // Отступы вокруг текста
+        ) {
+            Text(
+                text = photo.user.name,
+                color = Color.White,  // Белый цвет для текста
+                style = MaterialTheme.typography.bodyLarge
+            )
+        }
+    }
 }
 
 @Preview(showBackground = true)
