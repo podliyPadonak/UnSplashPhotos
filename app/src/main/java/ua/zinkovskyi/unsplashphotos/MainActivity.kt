@@ -89,7 +89,8 @@ fun GreetingPreview() {
 class PhotoViewModel : ViewModel() {
     val client = HttpClient(CIO)
 
-    private val apiService = UnsplashApiService(client, "afdBxz_67xorIqGGA-f1JC2SiOWKc7mCH1gONcyy8_Q")
+    private val apiService =
+        UnsplashApiService(client, "afdBxz_67xorIqGGA-f1JC2SiOWKc7mCH1gONcyy8_Q")
 
     // Состояние для хранения списка фотографий
     var photos = mutableStateOf<List<Image>>(emptyList())
@@ -119,10 +120,9 @@ fun PhotoListScreen(viewModel: PhotoViewModel) {
     }
 
     if (photos.value.isEmpty()) {
-        // Показываем индикатор загрузки, если фотографии еще не загружены
         CircularProgressIndicator()
     }
-    SpanLazyVerticalGrid(3,photos.value)
+    SpanLazyVerticalGrid(2, photos.value)
 
 }
 
@@ -135,11 +135,7 @@ fun SpanLazyVerticalGrid(cols: Int, itemList: List<Image>) {
     ) {
         items(itemList, span = { photo ->
             val isHorizontal = (photo.width ?: 0) > (photo.height ?: 0)
-            val span = if (isHorizontal) {
-                2 // горизонтальное фото занимает 2 колонки
-            } else {
-                1 // вертикальное фото занимает 1 колонку
-            }
+            val span = 1
             GridItemSpan(span)
         }) { photo ->
             PhotoItem(photo)
@@ -147,39 +143,35 @@ fun SpanLazyVerticalGrid(cols: Int, itemList: List<Image>) {
     }
 }
 
-
 @Composable
 fun PhotoItem(photo: Image) {
     val imageUrl = photo.urls.small
     val imagePainter = rememberAsyncImagePainter(imageUrl)
 
-    // Используем Box для размещения изображения и текста
     Box(
         modifier = Modifier
             .fillMaxWidth()
             .height(200.dp)
     ) {
-        // Изображение, которое занимает все пространство, с обрезкой
         Image(
             painter = imagePainter,
             contentDescription = "Photo",
             contentScale = ContentScale.Crop,
             modifier = Modifier
-                .fillMaxSize()  // Занимает все доступное пространство
-                .align(Alignment.Center) // Выравнивание изображения по центру
+                .fillMaxSize()
+                .align(Alignment.Center)
         )
 
-        // Текст с темным фоном, расположенный внизу
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .align(Alignment.BottomCenter)  // Текст будет снизу по центру
-                .background(Color.Black.copy(alpha = 0.6f))  // Темный фон с прозрачностью
-                .padding(8.dp)  // Отступы вокруг текста
+                .align(Alignment.BottomCenter)
+                .background(Color.Black.copy(alpha = 0.6f))
+                .padding(8.dp)
         ) {
             Text(
                 text = photo.user.name,
-                color = Color.White,  // Белый цвет для текста
+                color = Color.White,
                 style = MaterialTheme.typography.bodyLarge
             )
         }
