@@ -1,11 +1,12 @@
 package ua.zinkovskyi.unsplashphotos.view.screen
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.CircularProgressIndicator
@@ -32,7 +33,8 @@ fun PhotoScreen(photo: Image) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .wrapContentHeight()
+            .fillMaxHeight()
+            .background(MaterialTheme.colorScheme.background)
     ) {
         when (state) {
             is AsyncImagePainter.State.Loading -> {

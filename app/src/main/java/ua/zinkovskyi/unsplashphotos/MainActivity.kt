@@ -5,6 +5,9 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
@@ -59,7 +62,19 @@ fun MainActivityContent() {
                 }
                 composable(
                     "photo_detail/{photoId}",
-                    arguments = listOf(navArgument("photoId") { type = NavType.StringType })
+                    arguments = listOf(navArgument("photoId") { type = NavType.StringType }),
+                    enterTransition = {
+                        slideInHorizontally(initialOffsetX = { it }, animationSpec = tween(500))
+                    },
+                    exitTransition = {
+                        slideOutHorizontally(targetOffsetX = { -it }, animationSpec = tween(500))
+                    },
+                    popEnterTransition = {
+                        slideInHorizontally(initialOffsetX = { -it }, animationSpec = tween(500))
+                    },
+                    popExitTransition = {
+                        slideOutHorizontally(targetOffsetX = { it }, animationSpec = tween(500))
+                    }
                 ) { backStackEntry ->
                     val photoId =
                         backStackEntry.arguments?.getString("photoId") ?: return@composable
