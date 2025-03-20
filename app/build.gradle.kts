@@ -100,5 +100,4 @@ dependencies {
     implementation(libs.androidx.navigation.compose)
 
     implementation("io.insert-koin:koin-androidx-compose:3.2.0")
-    //implementation("io.insert-koin:koin-androidx-viewmodel:3.2.0")
 }
