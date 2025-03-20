@@ -15,13 +15,12 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import org.koin.androidx.compose.getKoin
 import ua.zinkovskyi.unsplashphotos.ui.theme.UnSplashPhotosTheme
 import ua.zinkovskyi.unsplashphotos.view.component.AppBar
 import ua.zinkovskyi.unsplashphotos.view.screen.PhotoListScreen
 import ua.zinkovskyi.unsplashphotos.view.screen.PhotoScreen
 import ua.zinkovskyi.unsplashphotos.viewmodel.PhotosScreenViewModel
-
-val vm = PhotosScreenViewModel()
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -38,6 +37,7 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun MainActivityContent() {
     val navController = rememberNavController()
+    val viewModel = getKoin().get<PhotosScreenViewModel>()
 
     Scaffold(
         topBar = { AppBar(navController) },
@@ -49,7 +49,7 @@ fun MainActivityContent() {
             ) {
                 composable("photo_list") {
                     PhotoListScreen(
-                        viewModel = vm,
+                        viewModel = viewModel,
                         onPhotoClick = { photo ->
                             navController.navigate("photo_detail/${photo.id}")
                         }
@@ -62,7 +62,7 @@ fun MainActivityContent() {
                     val photoId =
                         backStackEntry.arguments?.getString("photoId") ?: return@composable
 
-                    val photo = vm.photos.value.filter { it.id == photoId }.first()
+                    val photo = viewModel.photos.value.filter { it.id == photoId }.first()
 
                     PhotoScreen(
                         photo = photo,

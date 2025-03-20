@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -5,7 +7,16 @@ plugins {
     alias(libs.plugins.compose.compiler)
 }
 
-val apiKey: String? = project.findProperty("API_KEY") as String?
+val apiKey: String by lazy {
+    val localProperties = Properties()
+    val localPropertiesFile = rootProject.file("local.properties")
+    if (localPropertiesFile.exists()) {
+        localProperties.load(localPropertiesFile.inputStream())
+        localProperties["API_KEY"] as String? ?: "default_value"
+    } else {
+        "default_value"
+    }
+}
 
 android {
     namespace = "ua.zinkovskyi.unsplashphotos"

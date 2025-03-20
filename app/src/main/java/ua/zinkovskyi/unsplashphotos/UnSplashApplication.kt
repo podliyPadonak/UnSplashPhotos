@@ -17,7 +17,7 @@ class UnSplashApplication : Application() {
 
         startKoin {
             androidContext(this@UnSplashApplication)
-            modules(appModule) // Инициализация модулей
+            modules(appModule)
         }
     }
 }
@@ -26,6 +26,6 @@ val httpClient = HttpClient(CIO)
 val token = BuildConfig.API_KEY
 
 val appModule: Module = module {
-    viewModel { PhotosScreenViewModel() } // Регистрация ViewModel
-    single { UnsplashApiService(httpClient, token) }  // Регистрация сервиса API
+    single { UnsplashApiService(httpClient, token) }
+    viewModel { PhotosScreenViewModel() }
 }
