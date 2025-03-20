@@ -6,10 +6,10 @@ import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
 import org.koin.java.KoinJavaComponent.getKoin
 import ua.zinkovskyi.unsplashphotos.data.Image
-import ua.zinkovskyi.unsplashphotos.data.UnsplashApiService
+import ua.zinkovskyi.unsplashphotos.repository.PhotoRepository
 
 class PhotosScreenViewModel : ViewModel() {
-    private val apiService: UnsplashApiService = getKoin().get()
+    private val photosRepository: PhotoRepository = getKoin().get()
 
     var photos = mutableStateOf<List<Image>>(emptyList())
         private set
@@ -17,7 +17,7 @@ class PhotosScreenViewModel : ViewModel() {
     fun loadPhotos(page: Int, perPage: Int) {
         viewModelScope.launch {
             try {
-                val loadedPhotos = apiService.getPhotos(page, perPage)
+                val loadedPhotos = photosRepository.getPhotos(page, perPage)
                 photos.value = loadedPhotos
             } catch (e: Exception) {
 

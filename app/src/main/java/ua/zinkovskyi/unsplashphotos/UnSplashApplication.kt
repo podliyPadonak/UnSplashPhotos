@@ -9,6 +9,8 @@ import org.koin.core.context.GlobalContext.startKoin
 import org.koin.core.module.Module
 import org.koin.dsl.module
 import ua.zinkovskyi.unsplashphotos.data.UnsplashApiService
+import ua.zinkovskyi.unsplashphotos.repository.PhotoRepository
+import ua.zinkovskyi.unsplashphotos.repository.PhotoRepositoryImpl
 import ua.zinkovskyi.unsplashphotos.viewmodel.PhotosScreenViewModel
 
 class UnSplashApplication : Application() {
@@ -27,5 +29,6 @@ val token = BuildConfig.API_KEY
 
 val appModule: Module = module {
     single { UnsplashApiService(httpClient, token) }
+    single<PhotoRepository> { PhotoRepositoryImpl() }
     viewModel { PhotosScreenViewModel() }
 }

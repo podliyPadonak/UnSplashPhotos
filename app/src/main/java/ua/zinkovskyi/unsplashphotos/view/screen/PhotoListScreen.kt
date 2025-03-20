@@ -29,7 +29,6 @@ fun PhotoListScreen(
             delay(1000)
         }
     }
-
     Box(
         Modifier
             .fillMaxSize()
