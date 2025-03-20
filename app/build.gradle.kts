@@ -1,16 +1,18 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
+    kotlin("plugin.serialization") version "2.1.20"
+    alias(libs.plugins.compose.compiler)
 }
 
 android {
     namespace = "ua.zinkovskyi.unsplashphotos"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "ua.zinkovskyi.unsplashphotos"
         minSdk = 24
-        targetSdk = 34
+        targetSdk = 35
         versionCode = 1
         versionName = "1.0"
 
@@ -72,4 +74,9 @@ dependencies {
     implementation("io.ktor:ktor-client-serialization:3.0.0")
     implementation("io.ktor:ktor-client-core:3.0.0")
     implementation("io.ktor:ktor-client-cio:3.0.0")
+
+    implementation("io.coil-kt:coil-compose:2.2.0")
+
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.0")
+    implementation("androidx.compose.compiler:compiler:1.5.15")
 }

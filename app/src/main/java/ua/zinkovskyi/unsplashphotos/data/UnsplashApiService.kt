@@ -11,13 +11,14 @@ import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.ktor.client.call.*
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.json.Json
 
 class UnsplashApiService(private val client: HttpClient, private val authorizationHeader: String) {
 
     private val baseUrl = "https://api.unsplash.com"
 
     // Получаем список фотографий
-    suspend fun getPhotos(page: Int, perPage: Int): List<Photo> {
+    suspend fun getPhotos(page: Int, perPage: Int): List<Image> {
         return withContext(Dispatchers.IO) {
             try {
                 // Запрос к API для получения списка фотографий
@@ -25,9 +26,12 @@ class UnsplashApiService(private val client: HttpClient, private val authorizati
                     // Устанавливаем параметры запроса
                     parameter("page", page)
                     parameter("per_page", perPage)
-                    header(HttpHeaders.Authorization, authorizationHeader)
+                    header(HttpHeaders.Authorization, "Client-ID $authorizationHeader")
+                    //accept(ContentType.Application.Json)
                 }
-                response.body() // Возвращаем список фотографий
+                //response.body()
+                val body = response.bodyAsText()
+                Json.decodeFromString(body)
             } catch (e: Exception) {
                 throw Exception("Error fetching photos: ${e.message}")
             }
@@ -35,7 +39,7 @@ class UnsplashApiService(private val client: HttpClient, private val authorizati
     }
 
     // Получаем детальную информацию о фотографии
-    suspend fun getPhotoDetail(id: String): Photo {
+    suspend fun getPhotoDetail(id: String): Image {
         return withContext(Dispatchers.IO) {
             try {
                 // Запрос к API для получения информации о фотографии по ID
