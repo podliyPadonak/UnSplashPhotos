@@ -5,6 +5,8 @@ plugins {
     alias(libs.plugins.compose.compiler)
 }
 
+val apiKey: String? = project.findProperty("API_KEY") as String?
+
 android {
     namespace = "ua.zinkovskyi.unsplashphotos"
     compileSdk = 35
@@ -29,6 +31,10 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            buildConfigField("String", "API_KEY", "\"$apiKey\"")
+        }
+        debug {
+            buildConfigField("String", "API_KEY", "\"$apiKey\"")
         }
     }
     compileOptions {
@@ -40,6 +46,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
     composeOptions {
         kotlinCompilerExtensionVersion = "1.5.1"
@@ -80,4 +87,7 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.0")
     implementation("androidx.compose.compiler:compiler:1.5.15")
     implementation(libs.androidx.navigation.compose)
+
+    implementation("io.insert-koin:koin-androidx-compose:3.2.0")
+    //implementation("io.insert-koin:koin-androidx-viewmodel:3.2.0")
 }
