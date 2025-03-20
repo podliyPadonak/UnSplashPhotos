@@ -1,5 +1,6 @@
 package ua.zinkovskyi.unsplashphotos.view.screen
 
+import android.provider.ContactsContract.Contacts.Photo
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.CircularProgressIndicator

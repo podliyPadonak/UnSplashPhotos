@@ -16,6 +16,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import org.koin.androidx.compose.getKoin
+import ua.zinkovskyi.unsplashphotos.repository.PhotoRepository
 import ua.zinkovskyi.unsplashphotos.ui.theme.UnSplashPhotosTheme
 import ua.zinkovskyi.unsplashphotos.view.component.AppBar
 import ua.zinkovskyi.unsplashphotos.view.screen.PhotoListScreen
@@ -38,6 +39,7 @@ class MainActivity : ComponentActivity() {
 fun MainActivityContent() {
     val navController = rememberNavController()
     val viewModel = getKoin().get<PhotosScreenViewModel>()
+    val photosRepository: PhotoRepository = getKoin().get()
 
     Scaffold(
         topBar = { AppBar(navController) },
@@ -62,11 +64,13 @@ fun MainActivityContent() {
                     val photoId =
                         backStackEntry.arguments?.getString("photoId") ?: return@composable
 
-                    val photo = viewModel.photos.value.filter { it.id == photoId }.first()
+                    val photo = photosRepository.getPhotoById(photoId)
 
-                    PhotoScreen(
-                        photo = photo,
-                    )
+                    photo?.let {
+                        PhotoScreen(
+                            photo = it,
+                        )
+                    }
                 }
             }
         }

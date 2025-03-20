@@ -14,7 +14,7 @@ class PhotoRepositoryImpl() : PhotoRepository {
         return photos
     }
 
-    override suspend fun getPhotoById(id: String): Image? {
+    override fun getPhotoById(id: String): Image? {
         val photo = photos.filter { it.id == id }.firstOrNull()
         return photo
     }
