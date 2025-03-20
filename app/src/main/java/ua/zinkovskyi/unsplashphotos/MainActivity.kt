@@ -57,34 +57,13 @@ class MainActivity : ComponentActivity() {
         setContent {
             UnSplashPhotosTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Android",
-                        modifier = Modifier.padding(innerPadding)
-                    )
+                    PhotoListScreen(Modifier.padding(innerPadding), PhotoViewModel())
                 }
             }
         }
     }
 }
 
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-
-    PhotoListScreen(PhotoViewModel())
-
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    UnSplashPhotosTheme {
-        Greeting("Android")
-    }
-}
 
 class PhotoViewModel : ViewModel() {
     val client = HttpClient(CIO)
@@ -111,7 +90,7 @@ class PhotoViewModel : ViewModel() {
 
 
 @Composable
-fun PhotoListScreen(viewModel: PhotoViewModel) {
+fun PhotoListScreen(modifier: Modifier = Modifier, viewModel: PhotoViewModel) {
     // Состояние для отслеживания загрузки данных
     val photos = viewModel.photos
 
@@ -119,11 +98,15 @@ fun PhotoListScreen(viewModel: PhotoViewModel) {
         viewModel.loadPhotos(page = 1, perPage = 30)
     }
 
-    if (photos.value.isEmpty()) {
-        CircularProgressIndicator()
+    Box(Modifier
+        .fillMaxSize()
+        .then(modifier)
+    ) {
+        if (photos.value.isEmpty()) {
+            CircularProgressIndicator(Modifier.align(Alignment.Center))
+        }
+        SpanLazyVerticalGrid(2, photos.value)
     }
-    SpanLazyVerticalGrid(2, photos.value)
-
 }
 
 @Composable
@@ -181,6 +164,5 @@ fun PhotoItem(photo: Image) {
 @Preview(showBackground = true)
 @Composable
 fun DefaultPreview() {
-    // Здесь можно передать ViewModel в реальной ситуации
     PhotoListScreen(viewModel = PhotoViewModel())
 }
