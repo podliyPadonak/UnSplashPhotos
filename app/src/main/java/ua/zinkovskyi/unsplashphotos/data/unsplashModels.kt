@@ -19,7 +19,7 @@ data class Image(
     val breadcrumbs: List<String>?,
     val urls: Urls,
     val links: Links?,
-    val likes: Int?,
+    val likes: Int,
     val liked_by_user: Boolean?,
     val current_user_collections: List<String>?,
     val sponsorship: Sponsorship? = null,

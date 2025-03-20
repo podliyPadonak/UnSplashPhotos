@@ -13,6 +13,7 @@ import androidx.compose.ui.Modifier
 import kotlinx.coroutines.delay
 import ua.zinkovskyi.unsplashphotos.data.Image
 import ua.zinkovskyi.unsplashphotos.view.component.ImageGrid
+import ua.zinkovskyi.unsplashphotos.view.component.appBarText
 import ua.zinkovskyi.unsplashphotos.viewmodel.PhotosScreenViewModel
 
 @Composable
@@ -21,6 +22,8 @@ fun PhotoListScreen(
     viewModel: PhotosScreenViewModel,
     onPhotoClick: (Image) -> Unit
 ) {
+    appBarText.value = "UnSplash"
+
     val photos = viewModel.photos
 
     val isOnScreen = remember { mutableStateOf(true) }

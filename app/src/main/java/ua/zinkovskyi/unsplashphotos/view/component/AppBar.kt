@@ -10,8 +10,12 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavController
+
+val appBarText = mutableStateOf("UnSplash")
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -20,7 +24,7 @@ fun AppBar(navController: NavController) {
     TopAppBar(
         title = {
             Text(
-                text = if (navController.currentBackStackEntry?.destination?.route == "photo_list") "Галерея" else "Фото",
+                text = appBarText.value,
                 style = MaterialTheme.typography.titleLarge
             )
         },
